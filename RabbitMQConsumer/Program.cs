@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace RabbitMQConsumer
 {
@@ -7,13 +8,10 @@ namespace RabbitMQConsumer
         static void Main(string[] args)
         {
             var queueName = "MyFirstQueueTask";
-            
-            //for (int i = 0; i < 2; i++)
-            //{
-                var consumer = new Consumer(queueName);
-                consumer.ConsumeMessage();
-            //}
-            
+
+            var consumer = new Consumer(queueName);
+            consumer.ConsumeMessage();
+
             Console.ReadLine();
         }
     }
