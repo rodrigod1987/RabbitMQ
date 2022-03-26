@@ -1,13 +1,15 @@
 ﻿using RabbitMQ.Client;
+using RabbitMQModels;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 
 namespace RabbitMQProducer
 {
-    internal class QueueCreatorProducer
+    internal class QueueProducer
     {
-        public QueueCreatorProducer(string url, string queueName)
+        public QueueProducer(string url, string queueName)
         {
             Url = url;
             QueueName = queueName;
@@ -39,26 +41,14 @@ namespace RabbitMQProducer
             var props = Channel.CreateBasicProperties();
             props.Persistent = true;
 
-            var messageStream = ToStream(message);
+            var bytes = message.ToByteArray();
+
+            Task.Delay(80).GetAwaiter().GetResult();
 
             Channel.BasicPublish(exchange: "",
                 routingKey: QueueName,
                 basicProperties: props,
-                body: messageStream);
-        }
-
-        private byte[] ToStream<T>(T message)
-        {
-            if (message == null)
-            {
-                return null;
-            }
-
-            BinaryFormatter bf = new BinaryFormatter();
-            MemoryStream ms = new MemoryStream();
-            bf.Serialize(ms, message);
-
-            return ms.ToArray();
+                body: bytes);
         }
     }
 }

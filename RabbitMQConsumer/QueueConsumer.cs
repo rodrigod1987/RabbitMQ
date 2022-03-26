@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace RabbitMQConsumer
 {
-    internal class QueueCreatorConsumer
+    internal class QueueConsumer
     {
-        public QueueCreatorConsumer(string url, string queueName)
+        public QueueConsumer(string url, string queueName)
         {
             Url = url;
             QueueName = queueName;
@@ -35,7 +35,7 @@ namespace RabbitMQConsumer
                 arguments: null);
 
             channel.BasicQos(prefetchSize: 0, 
-                prefetchCount: 10, 
+                prefetchCount: 100, 
                 global: false);
 
             Channel = channel;
@@ -52,28 +52,14 @@ namespace RabbitMQConsumer
 
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
-            var message = ToObject<Message>(eventArgs.Body.ToArray());
+            var message = eventArgs.Body.ToArray().To<Message>();
 
             Console.WriteLine(" [x] Received {0}", message.ToString());
-            Task.Delay(600).GetAwaiter().GetResult();
+            //Task.Delay(100).GetAwaiter().GetResult();
 
             // Note: it is possible to access the channel via
             //       ((EventingBasicConsumer)sender).Model here
             Channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
-        }
-
-        private T ToObject<T>(byte[] bytes) where T : class
-        {
-            if (bytes == null)
-            {
-                return default;
-            }
-
-            BinaryFormatter bf = new BinaryFormatter();
-            using var ms = new MemoryStream(bytes);
-
-            object obj = bf.Deserialize(ms);
-            return (T)obj;
         }
     }
 }
