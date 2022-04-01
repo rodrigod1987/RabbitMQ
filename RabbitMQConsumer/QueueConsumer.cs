@@ -2,31 +2,30 @@
 using RabbitMQ.Client.Events;
 using RabbitMQModels;
 using System;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RabbitMQConsumer
 {
     internal class QueueConsumer
     {
-        public QueueConsumer(string url, string queueName)
+        private static int RANDOM_TIME = new Random(700).Next(1200);
+        private readonly IConnection _connection;
+
+        public QueueConsumer(string queueName, IConnection connection)
         {
-            Url = url;
             QueueName = queueName;
+            _connection = connection;
 
             CreateChannel();
         }
 
-        public string Url { get; }
         public string QueueName { get; }
         public IModel Channel { get; private set; }
 
         private void CreateChannel()
         {
-            var factory = new ConnectionFactory() { Uri = new Uri(Url) };
-            var connection = factory.CreateConnection();
-            var channel = connection.CreateModel();
+            var channel = _connection.CreateModel();
 
             channel.QueueDeclare(queue: QueueName, 
                 durable: true, 
@@ -35,8 +34,8 @@ namespace RabbitMQConsumer
                 arguments: null);
 
             channel.BasicQos(prefetchSize: 0, 
-                prefetchCount: 100, 
-                global: false);
+                prefetchCount: 5, 
+                global: true);
 
             Channel = channel;
         }
@@ -53,12 +52,17 @@ namespace RabbitMQConsumer
         private void OnReceived(object sender, BasicDeliverEventArgs eventArgs)
         {
             var message = eventArgs.Body.ToArray().To<Message>();
+            Console.WriteLine("[x] Received {0}", message.ToString());
 
-            Console.WriteLine(" [x] Received {0}", message.ToString());
-            //Task.Delay(100).GetAwaiter().GetResult();
+            if (message.Id % 20 == 0)
+            {
+                Task.Delay(9000).GetAwaiter().GetResult();
+            }
+            else
+            {
+                Task.Delay(RANDOM_TIME).GetAwaiter().GetResult();
+            }
 
-            // Note: it is possible to access the channel via
-            //       ((EventingBasicConsumer)sender).Model here
             Channel.BasicAck(deliveryTag: eventArgs.DeliveryTag, multiple: false);
         }
     }

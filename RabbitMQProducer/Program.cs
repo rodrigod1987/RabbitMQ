@@ -11,22 +11,23 @@ namespace RabbitMQProducer
         {
             var count = 0;
             var queueName = "MyFirstQueueTask";
-            var publisher = new Publisher(queueName);
 
             while (true)
             {
                 var message = CreateMessage(count);
 
+                var publisher = new Publisher(queueName);
                 publisher.SendMessage(message);
+
                 count++;
 
-                Console.WriteLine("Mensagem produzida: " + message.ToString());
+                Console.WriteLine("[+] Produced: " + message.ToString());
             }
         }
 
         private static Message CreateMessage(int count)
         {
-            return new Message() { Description = "Minha descrição " + count, Title = "Meu título " + count };
+            return new Message(count) { Description = "Minha descrição " + count, Title = "Meu título " + count };
         }
     }
 }

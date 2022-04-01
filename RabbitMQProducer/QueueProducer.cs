@@ -1,14 +1,15 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQModels;
 using System;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RabbitMQProducer
 {
     internal class QueueProducer
     {
+        private IBasicProperties _props;
+
         public QueueProducer(string url, string queueName)
         {
             Url = url;
@@ -34,20 +35,25 @@ namespace RabbitMQProducer
                 arguments: null);
 
             Channel = channel;
+
+            CreateProperties();
+        }
+
+        private void CreateProperties()
+        {
+            _props = Channel.CreateBasicProperties();
+            _props.Persistent = true;
         }
 
         public void SendMessage<T>(T message)
-        {
-            var props = Channel.CreateBasicProperties();
-            props.Persistent = true;
-
+        {            
             var bytes = message.ToByteArray();
 
-            Task.Delay(80).GetAwaiter().GetResult();
+            Task.Delay(3).GetAwaiter().GetResult();
 
             Channel.BasicPublish(exchange: "",
                 routingKey: QueueName,
-                basicProperties: props,
+                basicProperties: _props,
                 body: bytes);
         }
     }

@@ -1,12 +1,14 @@
-﻿namespace RabbitMQConsumer
+﻿using RabbitMQ.Client;
+
+namespace RabbitMQConsumer
 {
     public class Consumer
     {
         private QueueConsumer _queueCreator;
 
-        public Consumer(string queueName)
+        public Consumer(string queueName, IConnection connection)
         {
-            _queueCreator = new QueueConsumer("amqp://guest:guest@localhost:5672/", queueName);
+            _queueCreator = new QueueConsumer(queueName, connection);
         }
 
         public void ConsumeMessage()

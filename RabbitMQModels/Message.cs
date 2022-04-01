@@ -5,12 +5,12 @@ namespace RabbitMQModels
     [Serializable]
     public class Message
     {
-        public Message()
+        public Message(long count)
         {
-            Id = Guid.NewGuid().ToString();
+            Id = count;
         }
 
-        public string Id { get; }
+        public long Id { get; }
         public string Title { get; set; }
         public string Description { get; set; }
 
